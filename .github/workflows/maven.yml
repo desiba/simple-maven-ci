@@ -28,7 +28,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-     - name: Cache the Maven packages to speed up build
+    - name: Cache the Maven packages to speed up build
       uses: actions/cache@v1
       with:
         path: ~/.m2
