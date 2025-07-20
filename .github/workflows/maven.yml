@@ -18,14 +18,14 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           java-version: "17"
           
       - name: Cache the Maven packages to speed up build
-        uses: actions/cache@v4
+        uses: actions/cache@v2
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -37,13 +37,13 @@ jobs:
     needs:
       - build_and_test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: "17"
       - run: mvn -B package --file pom.xml -DskipTests
       - run: mkdir staging && cp target/apptest-0.0.1-SNAPSHOT.jar staging
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: Package
           path: staging
@@ -53,7 +53,7 @@ jobs:
     needs:
       - build_and_test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{
           secrets.DOCKER_PASSWORD }}
