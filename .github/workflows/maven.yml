@@ -25,21 +25,59 @@ jobs:
           java-version: "17"
           distribution: 'temurin'
           cache: maven
+
       - name: Cache the Maven packages to speed up build
         uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Build Docker Image
+        uses: docker/build-push-action@v3
         with:
-          name: coverage-report
-          path: target/site/jacoco/index.html
+          context: .
+          dockerfile: Dockerfile
+          push: false
+          tag: ${{ secrets.DOCKER_USERNAME }}/simple-docker-app:latest
+
+      - name: Login to Docker Hub
+        users: action/login-action@v3
+        with:
+          username: ${{ DOCKER_USERNAME }}
+          password: ${{ DOCKER_ACCESS_TOKEN }}
+
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: false
+          tag: ${{ secrets.DOCKER_USERNAME }}/simple-docker-app:latest
+
+  # test-coverage:
+  #   runs-on: ubuntu-latest
+  #   name: test coverage update
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+
+  #     - name: Run Jasmine tests
+  #       run: npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+
+  #     - name: Coverage report
+  #       uses: eleboys/test-coverage-report-action@v1.0.2
+  #       id: report
+  #       with:
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         path: coverage/coverage-summary.json
+  #         title: Karma Test Coverage
+
+  #     - name: Print the output summary
+  #       run: echo "Report coverage json ${{ steps.report.outputs.summary }}"
 
   # publish_job:
   #   runs-on: ubuntu-latest
