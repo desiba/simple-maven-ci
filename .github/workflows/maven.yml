@@ -20,6 +20,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Unit Tests
+        run: mvn -B test --file pom.xml
+
       - name: Build with Maven
         run: |
           mvn clean
@@ -44,6 +47,6 @@ jobs:
         with:
           context: .
           dockerfile: Dockerfile
-          push: false
+          push: true
           tag: ${{ secrets.DOCKER_USERNAME }}/simple-docker-app:latest
 
