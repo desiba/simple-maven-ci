@@ -1,11 +1,3 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Java CI with Maven
 on:
   push:
@@ -18,7 +10,9 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout code
+        uses: actions/checkout@v3
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -26,15 +20,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Cache the Maven packages to speed up build
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: |
+          mvn clean
+          mvn -B package --file pom.xml
 
       - name: Build Docker Image
         uses: docker/build-push-action@v3
@@ -57,58 +46,4 @@ jobs:
           dockerfile: Dockerfile
           push: false
           tag: ${{ secrets.DOCKER_USERNAME }}/simple-docker-app:latest
-
-  # test-coverage:
-  #   runs-on: ubuntu-latest
-  #   name: test coverage update
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-
-  #     - name: Run Jasmine tests
-  #       run: npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
-
-  #     - name: Coverage report
-  #       uses: eleboys/test-coverage-report-action@v1.0.2
-  #       id: report
-  #       with:
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         path: coverage/coverage-summary.json
-  #         title: Karma Test Coverage
-
-  #     - name: Print the output summary
-  #       run: echo "Report coverage json ${{ steps.report.outputs.summary }}"
-
-  # publish_job:
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - build_and_test
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions/setup-java@v3
-  #       with:
-  #         java-version: "17"
-  #         distribution: 'temurin'
-  #         cache: maven
-  #     - run: mvn -B package --file pom.xml -DskipTests
-  #     - run: mkdir staging && cp target/apptest-0.0.1-SNAPSHOT.jar staging
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: Package
-  #         path: staging
-  # build-docker-image:
-  #   name: Publish to Docker Hub
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - build_and_test
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Login to Docker Hub
-  #       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{
-  #         secrets.DOCKER_PASSWORD }}
-  #     - name: Build Container image
-  #       run: docker build -t ${{ secrets.DOCKER_REPO }}:latest .
-  #     - name: Publish Docker image
-  #       run: docker push ${{ secrets.DOCKER_REPO }}
-
 
